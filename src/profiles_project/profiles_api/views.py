@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
+from rest_framework import filters # search
 
 from . import serializers
 from . import models
@@ -114,3 +115,5 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = models.UserProfile.objects.all() # tell the view set how to retrive our object from our databse. in this case retrive all objects
     authentication_classes = (TokenAuthentication,)
     permission_classes = (permissions.UpdateOwnProfile,)
+    filter_backends = (filters.SearchFilter,) # Define all filter backends that we want use
+    search_fields = ('name', 'email',) # tell witch field we want search
