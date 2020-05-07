@@ -8,6 +8,8 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework import filters # search 
 from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.permissions import IsAuthenticatedOrReadOnly # Give all the permissions if the user is authenticated or just read if not authenticated. User are not be able to create new status at least the are logged 
+from rest_framework.permissions import IsAuthenticated # You must be autenticated to see profile status
 
 from . import serializers
 from . import models
@@ -129,3 +131,16 @@ class LoginViewSet(viewsets.ViewSet):
         """Use the ObtainAuthToken APIView to validate and create a token."""
 
         return ObtainAuthToken().post(request)
+
+class UserProfileFeedViewSet(viewsets.ModelViewSet):
+    """Handles creating, reading and updating profile feed items."""
+
+    authentication_classes = (TokenAuthentication,)
+    serializer_class = serializers.ProfileFeedItemSerializer
+    queryset = models.ProfileFeedItem.objects.all() 
+    permission_classes = (permissions.PostOwnStatus, IsAuthenticated) # Requires authentication to users, only authenticated users can see the feed
+
+    def perform_create(self, serializer): # Customize the logic thats run when we created a new object throug our viewset
+        """Sets the user profile to the logged in user."""
+
+        serializer.save(user_profile=self.request.user) # Make sure the user profile of the profile item is set to the current logged in user
